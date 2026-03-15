@@ -15,7 +15,7 @@ const generateSprite = async () => {
 
   try {
     // 1. Obtenemos la clave de Vercel (que ya comprobamos que funciona)
-    const token = import.meta.env.VITE_HF_API_KEY;
+    const token = import.meta.env.VITE_HF_API_KEY.trim();
 
     // 2. 🚀 EL TOQUE MÁGICO: Llamamos a nuestra propia web (/hf-api/...) 
     // y el archivo vercel.json se encargará de enviarlo a Hugging Face sin que salte el CORS.
