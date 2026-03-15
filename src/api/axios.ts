@@ -1,6 +1,9 @@
 import axios from 'axios';
 import { useAuthStore } from '../stores/authStore';
 
+// Detectamos si la aplicación está corriendo en producción (Vercel) o local
+const isProduction = import.meta.env.PROD;
+
 // -----------------------------------------------------------
 // 1. CONFIGURACIÓN DE INSTANCIAS (axios.create)
 // -----------------------------------------------------------
@@ -22,9 +25,12 @@ export const iaApi = axios.create({
   }
 });
 
-// API Actividad 3: Hugging Face (Sprites) - USANDO PROXY VITE
+// API Actividad 3: Hugging Face (Sprites)
+// Corregido para que funcione en Vercel (URL directa) y en Local (Proxy)
 export const hfApi = axios.create({
-  baseURL: '/hf-api/models/', 
+  baseURL: isProduction 
+    ? 'https://api-inference.huggingface.co/models/' 
+    : '/hf-api/models/', 
   timeout: 60000, 
   headers: {
     'Authorization': `Bearer ${import.meta.env.VITE_HF_API_KEY}`,
@@ -37,7 +43,6 @@ export const hfApi = axios.create({
 // 2. INTERCEPTORES (REQUISITO ACTIVIDAD 4)
 // -----------------------------------------------------------
 
-// Arreglo de todas nuestras instancias para aplicarles la seguridad de golpe
 const apiInstances = [jobApi, iaApi, hfApi];
 
 apiInstances.forEach(instance => {
@@ -63,17 +68,9 @@ apiInstances.forEach(instance => {
     (error) => {
       const authStore = useAuthStore();
 
-      // Si la API responde que el token no es válido o ha expirado
       if (error.response && (error.response.status === 401 || error.response.status === 403)) {
-        
-        // REQUISITO: Mostrar notificación (Toast/Alert)
         alert("⚠️ Tu sesión ha expirado o no tienes permisos. Por seguridad, debes iniciar sesión de nuevo.");
-        
-        // REQUISITO: Borrar token de Pinia
         authStore.logout();
-        
-        // Opcional: Redirigir a la página de inicio/login
-        // window.location.href = '/';
       }
       
       return Promise.reject(error);
