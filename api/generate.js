@@ -1,10 +1,11 @@
-import type { VercelRequest, VercelResponse } from "@vercel/node";
+export default async function handler(req, res) {
 
-export default async function handler(
-  req: VercelRequest,
-  res: VercelResponse
-) {
+  if (req.method !== "POST") {
+    return res.status(405).json({ error: "Método no permitido" });
+  }
+
   try {
+
     const response = await fetch(
       "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0",
       {
@@ -18,7 +19,7 @@ export default async function handler(
     );
 
     if (!response.ok) {
-      return res.status(response.status).json({ error: "HF error" });
+      return res.status(response.status).json({ error: "Error en HuggingFace" });
     }
 
     const buffer = await response.arrayBuffer();
@@ -27,6 +28,7 @@ export default async function handler(
     res.send(Buffer.from(buffer));
 
   } catch (error) {
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "Error generando imagen" });
   }
+
 }
