@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { useAuthStore } from '../stores/authStore';
 
-// API Actividad 1: Beeceptor
+// API Actividad 1: Beeceptor (Cambia la URL aquí si creas uno nuevo)
 export const jobApi = axios.create({
   baseURL: 'https://belen-jobs-api.free.beeceptor.com', 
   timeout: 5000,
@@ -18,9 +18,9 @@ export const iaApi = axios.create({
   }
 });
 
-// API Actividad 3: Hugging Face (URL DIRECTA, SIN PROXY)
+// API Actividad 3: Hugging Face (VUELVE EL PROXY)
 export const hfApi = axios.create({
-  baseURL: 'https://api-inference.huggingface.co/models/', 
+  baseURL: '/hf-api/models/', 
   timeout: 60000, 
   headers: {
     'Authorization': `Bearer ${import.meta.env.VITE_HF_API_KEY}`,
@@ -35,12 +35,11 @@ apiInstances.forEach(instance => {
   instance.interceptors.request.use((config) => {
     const authStore = useAuthStore();
     
-    // ESCUDO: Si la petición va a Hugging Face o Groq, NO inyectamos el token de GitHub
-    if (config.baseURL?.includes('huggingface') || config.baseURL?.includes('groq')) {
+    // ESCUDO CORS: No inyectamos token en HF ni Groq
+    if (config.baseURL?.includes('hf-api') || config.baseURL?.includes('groq')) {
       return config;
     }
     
-    // Si es para nuestra propia API o Beeceptor, sí lo enviamos
     if (authStore.token) {
       config.headers.Authorization = `Bearer ${authStore.token}`;
     }
