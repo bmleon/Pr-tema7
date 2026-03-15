@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { hfApi } from '../api/axios';
 
 const prompt = ref('');
 const imageUrl = ref<string | null>(null);
@@ -15,20 +14,34 @@ const generateSprite = async () => {
   imageUrl.value = null;
 
   try {
-    // 🚀 LA MAGIA ESTÁ AQUÍ: Usamos SOLO la ruta relativa.
-    // Como en axios.ts pusimos baseURL: '/hf-api/models/', 
-    // esto se convertirá en la ruta perfecta para que el vercel.json haga su trabajo.
-    const response = await hfApi.post('stabilityai/stable-diffusion-xl-base-1.0', {
-      inputs: prompt.value
+    // 1. Obtenemos la clave directamente de las variables de entorno
+    const token = import.meta.env.VITE_HF_API_KEY;
+    
+    // 🕵️ CHIVATO: Esto nos dirá en la consola si Vercel tiene tu clave o está vacía
+    console.log("¿Vercel está leyendo el Token de HF?:", !!token);
+
+    // 2. Conexión nativa directa (sin proxies ni interceptores)
+    const response = await fetch("https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ inputs: prompt.value })
     });
 
-    // Convertimos los datos binarios en una imagen visible
-    const blob = new Blob([response.data], { type: 'image/jpeg' });
+    if (!response.ok) {
+      // Si Hugging Face da error, capturamos exactamente cuál es
+      throw new Error(`Error del servidor: ${response.status} ${response.statusText}`);
+    }
+
+    // 3. Convertimos la respuesta binaria en una imagen visible
+    const blob = await response.blob();
     imageUrl.value = URL.createObjectURL(blob);
     
   } catch (error: any) {
-    console.error("Error al generar sprite:", error);
-    errorMsg.value = "Error al generar la imagen. Verifica tu conexión o la clave de la API.";
+    console.error("Detalle del error exacto:", error);
+    errorMsg.value = "Error al conectar con la IA. Abre la consola (F12) para ver el motivo exacto.";
   } finally {
     loading.value = false;
   }
