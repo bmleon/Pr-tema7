@@ -14,14 +14,12 @@ const generateSprite = async () => {
   imageUrl.value = null;
 
   try {
-    // 1. Obtenemos la clave directamente de las variables de entorno
+    // 1. Obtenemos la clave de Vercel (que ya comprobamos que funciona)
     const token = import.meta.env.VITE_HF_API_KEY;
-    
-    // 🕵️ CHIVATO: Esto nos dirá en la consola si Vercel tiene tu clave o está vacía
-    console.log("¿Vercel está leyendo el Token de HF?:", !!token);
 
-    // 2. Conexión nativa directa (sin proxies ni interceptores)
-    const response = await fetch("https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0", {
+    // 2. 🚀 EL TOQUE MÁGICO: Llamamos a nuestra propia web (/hf-api/...) 
+    // y el archivo vercel.json se encargará de enviarlo a Hugging Face sin que salte el CORS.
+    const response = await fetch("/hf-api/models/stabilityai/stable-diffusion-xl-base-1.0", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${token}`,
@@ -31,7 +29,6 @@ const generateSprite = async () => {
     });
 
     if (!response.ok) {
-      // Si Hugging Face da error, capturamos exactamente cuál es
       throw new Error(`Error del servidor: ${response.status} ${response.statusText}`);
     }
 
@@ -41,7 +38,7 @@ const generateSprite = async () => {
     
   } catch (error: any) {
     console.error("Detalle del error exacto:", error);
-    errorMsg.value = "Error al conectar con la IA. Abre la consola (F12) para ver el motivo exacto.";
+    errorMsg.value = "Error al generar la imagen. Verifica tu conexión.";
   } finally {
     loading.value = false;
   }
