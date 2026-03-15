@@ -1,9 +1,6 @@
 import axios from 'axios';
 import { useAuthStore } from '../stores/authStore';
 
-// Detectamos si la aplicación está corriendo en producción (Vercel) o local
-const isProduction = import.meta.env.PROD;
-
 // -----------------------------------------------------------
 // 1. CONFIGURACIÓN DE INSTANCIAS (axios.create)
 // -----------------------------------------------------------
@@ -25,18 +22,15 @@ export const iaApi = axios.create({
   }
 });
 
-// API Actividad 3: Hugging Face (Sprites)
-// Corregido para que funcione en Vercel (URL directa) y en Local (Proxy)
+// API Actividad 3: Hugging Face (Sprites) 
+// Usamos URL directa y configuración mínima para evitar bloqueos de CORS en producción
 export const hfApi = axios.create({
-  baseURL: isProduction 
-    ? 'https://api-inference.huggingface.co/models/' 
-    : '/hf-api/models/', 
+  baseURL: 'https://api-inference.huggingface.co/models/', 
   timeout: 60000, 
   headers: {
-    'Authorization': `Bearer ${import.meta.env.VITE_HF_API_KEY}`,
-    'Content-Type': 'application/json',
-    'Accept': 'image/jpeg' 
-  }
+    'Authorization': `Bearer ${import.meta.env.VITE_HF_API_KEY}`
+  },
+  responseType: 'arraybuffer' // Crucial para procesar la imagen correctamente
 });
 
 // -----------------------------------------------------------
@@ -53,8 +47,9 @@ apiInstances.forEach(instance => {
     
     // Si el usuario está autenticado en Pinia, enviamos su token
     if (authStore.token) {
+      // Usamos la cabecera estándar de Authorization
       config.headers.Authorization = `Bearer ${authStore.token}`;
-      console.log(`[Auth] Token inyectado en la petición a: ${config.baseURL}`);
+      console.log(`[Auth] Seguridad aplicada a: ${config.baseURL}`);
     }
     
     return config;
