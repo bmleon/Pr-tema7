@@ -1,8 +1,8 @@
 {
   "rewrites": [
     {
-      "source": "/hf-api/models/:path*",
-      "destination": "https://api-inference.huggingface.co/models/:path*"
+      "source": "/hf-api/(.*)",
+      "destination": "https://api-inference.huggingface.co/$1"
     }
   ]
 }
