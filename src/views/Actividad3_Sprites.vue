@@ -21,7 +21,7 @@ const generateSprite = async () => {
     const textoIA = `${prompt.value}, spritesheet, ${frames.value} frames, pixel art`;
 
     // Llamamos a nuestro proxy
-    const response = await fetch("/hf-api/models/stabilityai/stable-diffusion-xl-base-1.0", {
+    const response = await fetch("/api/generate", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${token}`,
