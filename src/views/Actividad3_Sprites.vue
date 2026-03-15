@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 
 const prompt = ref('');
+const frames = ref(4); // ¡Tus frames han vuelto!
 const imageUrl = ref<string | null>(null);
 const loading = ref(false);
 const errorMsg = ref('');
@@ -14,31 +15,31 @@ const generateSprite = async () => {
   imageUrl.value = null;
 
   try {
-    // 1. Obtenemos la clave de Vercel (que ya comprobamos que funciona)
     const token = import.meta.env.VITE_HF_API_KEY.trim();
+    
+    // Añadimos la indicación de los frames al texto que le pasamos a la IA
+    const textoIA = `${prompt.value}, spritesheet, ${frames.value} frames, pixel art`;
 
-    // 2. 🚀 EL TOQUE MÁGICO: Llamamos a nuestra propia web (/hf-api/...) 
-    // y el archivo vercel.json se encargará de enviarlo a Hugging Face sin que salte el CORS.
+    // Llamamos a nuestro proxy
     const response = await fetch("/hf-api/models/stabilityai/stable-diffusion-xl-base-1.0", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${token}`,
         "Content-Type": "application/json"
       },
-      body: JSON.stringify({ inputs: prompt.value })
+      body: JSON.stringify({ inputs: textoIA })
     });
 
     if (!response.ok) {
-      throw new Error(`Error del servidor: ${response.status} ${response.statusText}`);
+      throw new Error(`Error del servidor: ${response.status}`);
     }
 
-    // 3. Convertimos la respuesta binaria en una imagen visible
     const blob = await response.blob();
     imageUrl.value = URL.createObjectURL(blob);
     
   } catch (error: any) {
     console.error("Detalle del error exacto:", error);
-    errorMsg.value = "Error al generar la imagen. Verifica tu conexión.";
+    errorMsg.value = "Error 404: Vercel no encuentra la ruta. Revisa que vercel.json esté en la raíz del proyecto.";
   } finally {
     loading.value = false;
   }
@@ -48,14 +49,28 @@ const generateSprite = async () => {
 <template>
   <div class="sprite-container">
     <h2 class="title">👾 Generador de Sprites (IA)</h2>
-    <div class="input-group">
+    
+    <div class="controls-group">
       <input
         v-model="prompt"
         type="text"
-        placeholder="Ej: un perro astronauta en estilo pixel art..."
+        placeholder="Ej: un perro astronauta..."
         @keyup.enter="generateSprite"
         :disabled="loading"
+        class="prompt-input"
       />
+      
+      <div class="frames-selector">
+        <label>Frames:</label>
+        <input 
+          v-model="frames" 
+          type="number" 
+          min="1" 
+          max="12" 
+          :disabled="loading"
+        />
+      </div>
+
       <button @click="generateSprite" :disabled="loading || !prompt">
         {{ loading ? 'Generando...' : 'Crear Sprite' }}
       </button>
@@ -64,18 +79,16 @@ const generateSprite = async () => {
     <div v-if="errorMsg" class="error-msg">{{ errorMsg }}</div>
 
     <div class="image-wrapper">
-      <div v-if="loading" class="loader">Pintando píxeles mágicos... 🎨</div>
+      <div v-if="loading" class="loader">Pintando {{ frames }} píxeles mágicos... 🎨</div>
       <img v-else-if="imageUrl" :src="imageUrl" alt="Sprite generado" class="generated-image" />
-      <div v-else class="placeholder">
-        Tu sprite aparecerá aquí
-      </div>
+      <div v-else class="placeholder">Tu sprite aparecerá aquí</div>
     </div>
   </div>
 </template>
 
 <style scoped>
 .sprite-container {
-  max-width: 600px;
+  max-width: 700px;
   margin: 0 auto;
   padding: 20px;
   text-align: center;
@@ -85,22 +98,34 @@ const generateSprite = async () => {
   color: #2c3e50;
   margin-bottom: 20px;
 }
-.input-group {
+.controls-group {
   display: flex;
-  gap: 10px;
+  gap: 15px;
   margin-bottom: 20px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
 }
-input {
-  flex: 1;
+.prompt-input {
+  flex: 2;
+  min-width: 250px;
   padding: 12px;
   border: 1px solid #ccc;
   border-radius: 8px;
   font-size: 16px;
-  outline: none;
-  transition: border-color 0.3s;
 }
-input:focus {
-  border-color: #42b883;
+.frames-selector {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: bold;
+}
+.frames-selector input {
+  width: 60px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  text-align: center;
 }
 button {
   padding: 12px 20px;
@@ -110,10 +135,6 @@ button {
   border-radius: 8px;
   cursor: pointer;
   font-weight: bold;
-  transition: background-color 0.3s;
-}
-button:hover:not(:disabled) {
-  background-color: #3aa876;
 }
 button:disabled {
   background-color: #a8d5c2;
@@ -135,14 +156,10 @@ button:disabled {
   align-items: center;
   justify-content: center;
   background-color: #fdfdfd;
-  overflow: hidden;
-  box-shadow: inset 0 0 10px rgba(0,0,0,0.02);
 }
 .generated-image {
   max-width: 100%;
-  max-height: 400px;
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 .placeholder, .loader {
   color: #95a5a6;
