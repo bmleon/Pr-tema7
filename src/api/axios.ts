@@ -25,8 +25,7 @@ export const hfApi = axios.create({
   headers: {
     'Authorization': `Bearer ${import.meta.env.VITE_HF_API_KEY}`,
     'Content-Type': 'application/json'
-  },
-  responseType: 'arraybuffer'
+  }
 });
 
 // INTERCEPTORES
