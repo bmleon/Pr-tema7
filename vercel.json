@@ -1,12 +1,12 @@
 {
-  "rewrites": [
+  "routes": [
     {
-      "source": "/hf-api/:path*",
-      "destination": "https://api-inference.huggingface.co/:path*"
+      "src": "/hf-api/(.*)",
+      "dest": "https://api-inference.huggingface.co/$1"
     },
     {
-      "source": "/(.*)",
-      "destination": "/index.html"
+      "src": "/(.*)",
+      "dest": "/index.html"
     }
   ]
 }
