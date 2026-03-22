@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { hfApi } from '../api/axios'; // Mantienes tu importación de Axios original
+import { hfApi } from '../api/axios';
 
 const prompt = ref('');
 const imageUrl = ref<string | null>(null);
@@ -20,10 +20,8 @@ const generateSprite = async () => {
   try {
     const textoIA = `${prompt.value}, 2d game sprite sheet, pixel art, sequence, white background, character design`;
 
-    // 🚀 Usamos la ruta relativa para pasar por los proxies de Vercel y Vite
-    // Usamos el modelo FLUX que es el gratuito que funciona ahora mismo
     const response = await hfApi.post(
-      'black-forest-labs/FLUX.1-schnell',
+      'models/black-forest-labs/FLUX.1-schnell',
       { inputs: textoIA },
       {
         responseType: 'blob',
@@ -46,7 +44,6 @@ const generateSprite = async () => {
   } catch (err: any) {
     console.error("Error al generar sprite:", err);
     
-    // Decodificar el mensaje de error si viene en Blob
     if (err.response?.data instanceof Blob) {
       const errorText = await err.response.data.text();
       try {
