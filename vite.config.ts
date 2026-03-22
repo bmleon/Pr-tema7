@@ -6,8 +6,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/hf-api': {
-        // 🚀 AÑADIMOS LA RUTA EXACTA DEL NUEVO ROUTER DE INFERENCIA
-        target: 'https://router.huggingface.co/hf-inference', 
+        target: 'https://api-inference.huggingface.co',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/hf-api/, '')
       }
