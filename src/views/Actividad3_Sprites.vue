@@ -21,12 +21,13 @@ const generateSprite = async () => {
     const textoIA = `${prompt.value}, 2d game sprite sheet, pixel art, sequence, white background, character design`;
 
     const response = await hfApi.post(
-      'black-forest-labs/FLUX.1-schnell',
+      'models/black-forest-labs/FLUX.1-schnell',
       { inputs: textoIA },
       {
         responseType: 'blob',
         headers: {
-          'Accept': 'image/jpeg'
+          'Accept': 'image/jpeg',
+          'X-Use-Cache': 'false'
         },
         onDownloadProgress: (progressEvent) => {
           if (progressEvent.total) {
