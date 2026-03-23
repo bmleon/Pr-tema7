@@ -21,7 +21,7 @@ const generateSprite = async () => {
     const textoIA = `${prompt.value}, 2d game sprite sheet, pixel art, sequence, white background, character design`;
 
     const response = await hfApi.post(
-      'models/black-forest-labs/FLUX.1-schnell',
+      'black-forest-labs/FLUX.1-schnell',
       { inputs: textoIA },
       {
         responseType: 'blob',
