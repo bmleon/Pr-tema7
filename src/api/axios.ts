@@ -17,7 +17,7 @@ export const iaApi = axios.create({
 });
 
 export const hfApi = axios.create({
-  baseURL: '/hf-api/', 
+  baseURL: '/hf-api/',
   timeout: 60000, 
   headers: {
     'Authorization': `Bearer ${import.meta.env.VITE_HF_API_KEY}`,
